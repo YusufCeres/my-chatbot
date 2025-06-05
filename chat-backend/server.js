@@ -13,7 +13,7 @@ app.use(cors({
         'http://localhost:3000',
         'http://localhost:5000',
         'http://127.0.0.1:3000',
-        'https://portfolio-chatbot-liard.vercel.app', // Replace with your Vercel frontend URL
+        'my-chatbot-eight-xi.vercel.app', // Replace with your Vercel frontend URL
         // Add any other domains you need
     ],
     credentials: true
