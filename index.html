@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Chatbot</title>
+    <style>
+        :root {
+            --portfolio-navy: #0a192f;
+            --portfolio-lightNavy: #112240;
+            --portfolio-lightestNavy: #233554;
+            --portfolio-slate: #8892b0;
+            --portfolio-lightSlate: #a8b2d1;
+            --portfolio-lightestSlate: #ccd6f6;
+            --portfolio-teal: #64ffda;
+            --portfolio-white: #e6f1ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--portfolio-navy);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            background: var(--portfolio-lightNavy);
+            border-radius: 20px;
+            border: 1px solid var(--portfolio-lightestNavy);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: var(--portfolio-lightestNavy);
+            color: var(--portfolio-lightestSlate);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid var(--portfolio-lightestNavy);
+        }
+
+        .chat-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--portfolio-lightestSlate);
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--portfolio-teal);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: var(--portfolio-navy);
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .message.bot .message-bubble {
+            background: var(--portfolio-lightNavy);
+            color: var(--portfolio-lightSlate);
+            border: 1px solid var(--portfolio-lightestNavy);
+            border-bottom-left-radius: 6px;
+        }
+
+        .message.user .message-bubble {
+            background: var(--portfolio-teal);
+            color: var(--portfolio-navy);
+            border-bottom-right-radius: 6px;
+        }
+
+        .message-bubble a {
+            color: var(--portfolio-teal);
+            text-decoration: underline;
+            word-break: break-all;
+        }
+
+        .message.user .message-bubble a {
+            color: var(--portfolio-navy);
+            font-weight: 600;
+        }
+
+        .message-bubble strong {
+            font-weight: 600;
+            color: var(--portfolio-lightestSlate);
+        }
+
+        .message.user .message-bubble strong {
+            color: var(--portfolio-navy);
+        }
+
+        .message-bubble em {
+            font-style: italic;
+            color: var(--portfolio-slate);
+        }
+
+        .message.user .message-bubble em {
+            color: var(--portfolio-lightNavy);
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .message.bot .message-avatar {
+            background: var(--portfolio-lightestNavy);
+            color: var(--portfolio-teal);
+            border: 1px solid var(--portfolio-teal);
+        }
+
+        .message.user .message-avatar {
+            background: var(--portfolio-slate);
+            color: var(--portfolio-navy);
+        }
+
+        .chat-input {
+            padding: 20px;
+            background: var(--portfolio-lightNavy);
+            border-top: 1px solid var(--portfolio-lightestNavy);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--portfolio-lightestNavy);
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: var(--portfolio-navy);
+            color: var(--portfolio-lightSlate);
+        }
+
+        .message-input:focus {
+            border-color: var(--portfolio-teal);
+        }
+
+        .message-input::placeholder {
+            color: var(--portfolio-slate);
+        }
+
+        .send-button {
+            width: 45px;
+            height: 45px;
+            border: none;
+            border-radius: 50%;
+            background: var(--portfolio-teal);
+            color: var(--portfolio-navy);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+            background: #4fd1c7;
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            background: var(--portfolio-slate);
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--portfolio-slate);
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .connection-status {
+            background: var(--portfolio-lightestNavy);
+            color: var(--portfolio-teal);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 20px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid var(--portfolio-teal);
+        }
+
+        .error-status {
+            background: var(--portfolio-lightestNavy);
+            color: #ff6b6b;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 20px;
+            font-size: 12px;
+            text-align: center;
+            border: 1px solid #ff6b6b;
+        }
+
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--portfolio-navy);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--portfolio-lightestNavy);
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: var(--portfolio-slate);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Portfolio Assistant</h1>
+            <div class="status-indicator"></div>
+        </div>
+        
+        <div id="connectionStatus"></div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble">
+                    👋 Hi! I'm your portfolio assistant. Connecting to Dialogflow...
+                </div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="message-avatar">🤖</div>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Type your message..."
+                    disabled
+                >
+                <button class="send-button" id="sendButton" onclick="sendMessage()" disabled>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DialogflowChatbot {
+            constructor() {
+                this.config = {
+                    projectId: 'portfoliochatbot-si9l', // Hardcoded project ID
+                    sessionId: this.generateSessionId(),
+                    languageCode: 'en',
+                    webhookUrl: 'https://chat-backend-xgw9.onrender.com/webhook'
+                };
+                this.initialized = false;
+                this.setupEventListeners();
+                this.autoConnect();
+            }
+
+            generateSessionId() {
+                return 'session-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now().toString(36);
+            }
+
+            setupEventListeners() {
+                const input = document.getElementById('messageInput');
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            async autoConnect() {
+                try {
+                    this.showConnectionStatus('Connecting to Dialogflow...', 'connecting');
+                    
+                    // Test connection with a simple message
+                    await this.testConnection();
+                    
+                    this.initialized = true;
+                    
+                    // Enable input
+                    document.getElementById('messageInput').disabled = false;
+                    document.getElementById('sendButton').disabled = false;
+                    
+                    // Show success
+                    this.showConnectionStatus('✅ Connected successfully!', 'success');
+                    
+                    // Add welcome messages
+                    setTimeout(() => {
+                        this.addMessage('bot', `🎯 Portfolio Assistant Ready!`);
+                        this.addMessage('bot', `💬 Ask me about Yusufs portfolio, skills, projects, I am always here to help!`);
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('Connection failed:', error);
+                    this.showConnectionStatus('❌ Connection failed. Please try again.', 'error');
+                    this.addMessage('bot', `⚠️ I'm having trouble connecting. You can still try chatting!`, true);
+                    
+                    // Still enable input so user can try
+                    document.getElementById('messageInput').disabled = false;
+                    document.getElementById('sendButton').disabled = false;
+                }
+            }
+
+            async testConnection() {
+                const response = await fetch(this.config.webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'hello',
+                        sessionId: this.config.sessionId,
+                        languageCode: this.config.languageCode,
+                        projectId: this.config.projectId
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Backend Error (${response.status}): ${errorText}`);
+                }
+
+                return response.json();
+            }
+
+            showConnectionStatus(message, type) {
+                const statusDiv = document.getElementById('connectionStatus');
+                const className = type === 'error' ? 'error-status' : 'connection-status';
+                statusDiv.innerHTML = `<div class="${className}">${message}</div>`;
+                
+                // Auto-hide success messages after 3 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        statusDiv.innerHTML = '';
+                    }, 3000);
+                }
+            }
+
+            async sendMessage(text) {
+                if (!text) {
+                    const input = document.getElementById('messageInput');
+                    text = input.value.trim();
+                    if (!text) return;
+                    input.value = '';
+                }
+
+                // Add user message
+                this.addMessage('user', text);
+                
+                // Show typing indicator
+                this.showTyping(true);
+                
+                try {
+                    const response = await this.callWebhook(text);
+                    
+                    // Hide typing indicator
+                    this.showTyping(false);
+                    
+                    // Add bot response
+                    this.addMessage('bot', response.fulfillmentText || response.message || response.reply || 'I received your message, but got an empty response.');
+                    
+                } catch (error) {
+                    this.showTyping(false);
+                    console.error('Chat error:', error);
+                    this.addMessage('bot', `❌ Connection error: ${error.message}`, true);
+                }
+            }
+
+            async callWebhook(text) {
+                const response = await fetch(this.config.webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        sessionId: this.config.sessionId,
+                        languageCode: this.config.languageCode,
+                        projectId: this.config.projectId
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Backend Error (${response.status}): ${errorText || 'Make sure your backend is running and accessible'}`);
+                }
+
+                const data = await response.json();
+                return data;
+            }
+
+            // Function to process text and convert URLs to links
+            processMessageText(text) {
+                // Check if message matches the pattern you specified
+                const pattern = /^Sure!\s*Here's my\s+(.+?):\s+(https?:\/\/[^\s]+\.(pdf|png))/i;
+                const match = text.match(pattern);
+                
+                if (match) {
+                    const description = match[1];
+                    const url = match[2];
+                    const extension = match[3].toUpperCase();
+                    
+                    return `Sure! Here's my ${description}: <a href="${url}" target="_blank" rel="noopener noreferrer">Download ${extension}</a>`;
+                }
+                
+                // Check for contact information formatting
+                if (text.includes("You can contact me either")) {
+                    // Make phone number clickable
+                    text = text.replace(/(\d{10})/g, '<a href="tel:$1">$1</a>');
+                    // Make email clickable
+                    text = text.replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '<a href="mailto:$1">$1</a>');
+                }
+                
+                // Check for portfolio assistant summary formatting
+                if (text.includes("I'm your portfolio assistant! Here's what I can help you with:")) {
+                    // Format the summary with proper HTML
+                    text = text
+                        // Make section headers bold
+                        .replace(/📋 \*\*Professional Information:\*\*/g, '<strong>📋 Professional Information:</strong>')
+                        .replace(/💼 \*\*Projects & Work:\*\*/g, '<strong>💼 Projects & Work:</strong>')
+                        .replace(/🎓 \*\*Academic & Skills:\*\*/g, '<strong>🎓 Academic & Skills:</strong>')
+                        .replace(/📍 \*\*Personal Details:\*\*/g, '<strong>📍 Personal Details:</strong>')
+                        .replace(/🎯 \*\*Interactive Features:\*\*/g, '<strong>🎯 Interactive Features:</strong>')
+                        // Convert line breaks and format as HTML list
+                        .replace(/\n- /g, '<br>• ')
+                        .replace(/\n/g, '<br>')
+                        // Make italic text properly formatted
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+                }
+                
+                // General URL detection for any http/https links ending in .pdf or .png
+                const urlPattern = /(https?:\/\/[^\s]+\.(pdf|png))/gi;
+                return text.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+            }
+
+            addMessage(sender, text, isError = false) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+
+                const avatar = document.createElement('div');
+                avatar.className = 'message-avatar';
+                avatar.textContent = sender === 'bot' ? '🤖' : '👤';
+
+                const bubble = document.createElement('div');
+                bubble.className = 'message-bubble';
+                
+                // Process text for URLs if it's a bot message
+                if (sender === 'bot' && !isError) {
+                    bubble.innerHTML = this.processMessageText(text);
+                } else {
+                    bubble.textContent = text;
+                }
+
+                if (isError) {
+                    bubble.style.background = 'var(--portfolio-lightestNavy)';
+                    bubble.style.color = '#ff6b6b';
+                    bubble.style.border = '1px solid #ff6b6b';
+                }
+
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(bubble);
+                messagesContainer.appendChild(messageDiv);
+
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            showTyping(show) {
+                const indicator = document.getElementById('typingIndicator');
+                indicator.style.display = show ? 'flex' : 'none';
+                
+                if (show) {
+                    const messagesContainer = document.getElementById('chatMessages');
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+        }
+
+        // Initialize chatbot instance
+        const chatbot = new DialogflowChatbot();
+
+        // Global function for send button
+        function sendMessage() {
+            chatbot.sendMessage();
+        }
+    </script>
+</body>
+</html>
